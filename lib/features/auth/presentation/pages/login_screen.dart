@@ -62,9 +62,10 @@ class _LoginViewState extends State<_LoginView> {
               constraints: const BoxConstraints(maxWidth: 440),
               child: BlocListener<AuthBloc, AuthState>(
                 listener: (context, state) {
-                  if (state case AuthSuccess(:final user)) {
+                  if (state.status == AuthStatus.success &&
+                      state.user != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Welcome, ${user.name}')),
+                      SnackBar(content: Text('Welcome, ${state.user!.name}')),
                     );
                   }
                 },
@@ -147,7 +148,7 @@ class _LoginViewState extends State<_LoginView> {
                       const SizedBox(height: 12),
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
-                          final isLoading = state is AuthLoading;
+                          final isLoading = state.status == AuthStatus.loading;
                           return FilledButton(
                             onPressed: isLoading ? null : _submit,
                             style: FilledButton.styleFrom(
@@ -169,13 +170,14 @@ class _LoginViewState extends State<_LoginView> {
                       ),
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
-                          if (state is! AuthFailure) {
+                          if (state.status != AuthStatus.failure ||
+                              state.failure == null) {
                             return const SizedBox(height: 24);
                           }
                           return Padding(
                             padding: const EdgeInsets.only(top: 18),
                             child: Text(
-                              state.failure.message,
+                              state.failure!.message,
                               textAlign: TextAlign.center,
                               style: const TextStyle(color: Color(0xFFB3261E)),
                             ),

@@ -4,7 +4,7 @@ import 'package:my_vibecode_app/features/auth/presentation/bloc/auth_event.dart'
 import 'package:my_vibecode_app/features/auth/presentation/bloc/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc({required this.loginUseCase}) : super(const AuthInitial()) {
+  AuthBloc({required this.loginUseCase}) : super(const AuthState()) {
     on<LoginSubmitted>(_onLoginSubmitted);
   }
 
@@ -14,14 +14,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoginSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading());
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        clearUser: true,
+        clearFailure: true,
+      ),
+    );
     final result = await loginUseCase(
       email: event.email,
       password: event.password,
     );
     result.match(
-      (failure) => emit(AuthFailure(failure)),
-      (user) => emit(AuthSuccess(user)),
+      (failure) => emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          failure: failure,
+          clearUser: true,
+        ),
+      ),
+      (user) => emit(
+        state.copyWith(
+          status: AuthStatus.success,
+          user: user,
+          clearFailure: true,
+        ),
+      ),
     );
   }
 }
