@@ -3,19 +3,32 @@ import 'package:my_vibecode_app/features/auth/data/datasources/auth_remote_data_
 import 'package:my_vibecode_app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:my_vibecode_app/features/auth/domain/usecases/login_use_case.dart';
 import 'package:my_vibecode_app/features/auth/presentation/pages/login_screen.dart';
+import 'package:my_vibecode_app/features/home/data/repositories/home_repository_impl.dart';
+import 'package:my_vibecode_app/features/home/domain/usecases/load_home_overview_use_case.dart';
 
 void main() {
   final authRemoteDataSource = AuthRemoteDataSourceImpl();
   final authRepository = AuthRepositoryImpl(
     remoteDataSource: authRemoteDataSource,
   );
-  runApp(MyApp(loginUseCase: LoginUseCase(authRepository)));
+  final homeRepository = HomeRepositoryImpl();
+  runApp(
+    MyApp(
+      loginUseCase: LoginUseCase(authRepository),
+      loadHomeOverview: LoadHomeOverviewUseCase(homeRepository),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.loginUseCase});
+  const MyApp({
+    super.key,
+    required this.loginUseCase,
+    required this.loadHomeOverview,
+  });
 
   final LoginUseCase loginUseCase;
+  final LoadHomeOverviewUseCase loadHomeOverview;
 
   // This widget is the root of your application.
   @override
@@ -62,7 +75,10 @@ class MyApp extends StatelessWidget {
           contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         ),
       ),
-      home: LoginScreen(loginUseCase: loginUseCase),
+      home: LoginScreen(
+        loginUseCase: loginUseCase,
+        loadHomeOverview: loadHomeOverview,
+      ),
     );
   }
 }

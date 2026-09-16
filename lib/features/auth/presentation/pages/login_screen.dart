@@ -4,23 +4,32 @@ import 'package:my_vibecode_app/features/auth/domain/usecases/login_use_case.dar
 import 'package:my_vibecode_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:my_vibecode_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:my_vibecode_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:my_vibecode_app/features/home/presentation/pages/home_screen.dart';
+import 'package:my_vibecode_app/features/home/domain/usecases/load_home_overview_use_case.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key, required this.loginUseCase});
+  const LoginScreen({
+    super.key,
+    required this.loginUseCase,
+    this.loadHomeOverview,
+  });
 
   final LoginUseCase loginUseCase;
+  final LoadHomeOverviewUseCase? loadHomeOverview;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => AuthBloc(loginUseCase: loginUseCase),
-      child: const _LoginView(),
+      child: _LoginView(loadHomeOverview: loadHomeOverview),
     );
   }
 }
 
 class _LoginView extends StatefulWidget {
-  const _LoginView();
+  const _LoginView({required this.loadHomeOverview});
+
+  final LoadHomeOverviewUseCase? loadHomeOverview;
 
   @override
   State<_LoginView> createState() => _LoginViewState();
@@ -80,6 +89,17 @@ class _LoginViewState extends State<_LoginView> {
                         previous.status != current.status,
                     listener: (context, state) {
                       if (state.status == AuthStatus.success &&
+                          state.user != null &&
+                          widget.loadHomeOverview != null) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute<void>(
+                            builder: (_) => HomeScreen(
+                              user: state.user!,
+                              loadHomeOverview: widget.loadHomeOverview!,
+                            ),
+                          ),
+                        );
+                      } else if (state.status == AuthStatus.success &&
                           state.user != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
