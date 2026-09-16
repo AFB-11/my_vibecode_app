@@ -6,6 +6,7 @@ import 'package:my_vibecode_app/features/home/domain/usecases/load_home_overview
 import 'package:my_vibecode_app/features/home/presentation/bloc/home_bloc.dart';
 import 'package:my_vibecode_app/features/home/presentation/bloc/home_event.dart';
 import 'package:my_vibecode_app/features/home/presentation/bloc/home_state.dart';
+import 'package:my_vibecode_app/features/home/presentation/widgets/add_task_bottom_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -64,6 +65,31 @@ class _HomeView extends StatelessWidget {
           },
         ),
       ),
+      floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          if (state.status != HomeStatus.success) {
+            return const SizedBox.shrink();
+          }
+          return FloatingActionButton.extended(
+            onPressed: () => _showAddTask(context),
+            backgroundColor: _emerald,
+            foregroundColor: Colors.white,
+            elevation: 3,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('New task'),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showAddTask(BuildContext context) async {
+    final task = await AddTaskBottomSheet.show(context);
+    if (task == null || !context.mounted) {
+      return;
+    }
+    context.read<HomeBloc>().add(
+      AddTask(title: task.title, category: task.category),
     );
   }
 }
@@ -105,7 +131,12 @@ class _HomeContent extends StatelessWidget {
                     onAction: () {},
                   ),
                   const SizedBox(height: 14),
-                  _ActivityList(activities: overview.activities),
+                  _ActivityList(
+                    activities: overview.activities,
+                    onToggle: (index) => context.read<HomeBloc>().add(
+                      ToggleTaskCompletion(index),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -335,9 +366,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ActivityList extends StatelessWidget {
-  const _ActivityList({required this.activities});
+  const _ActivityList({required this.activities, required this.onToggle});
 
   final List<HomeActivity> activities;
+  final ValueChanged<int> onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -357,21 +389,25 @@ class _ActivityList extends StatelessWidget {
           endIndent: 20,
           color: _HomeView._line,
         ),
-        itemBuilder: (context, index) =>
-            _ActivityTile(activity: activities[index]),
+        itemBuilder: (context, index) => _ActivityTile(
+          activity: activities[index],
+          onTap: () => onToggle(index),
+        ),
       ),
     );
   }
 }
 
 class _ActivityTile extends StatelessWidget {
-  const _ActivityTile({required this.activity});
+  const _ActivityTile({required this.activity, required this.onTap});
 
   final HomeActivity activity;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       leading: Container(
         width: 36,

@@ -6,6 +6,16 @@ class HomeOverview extends Equatable {
   final List<HomeMetric> metrics;
   final List<HomeActivity> activities;
 
+  HomeOverview copyWith({
+    List<HomeMetric>? metrics,
+    List<HomeActivity>? activities,
+  }) {
+    return HomeOverview(
+      metrics: metrics ?? this.metrics,
+      activities: activities ?? this.activities,
+    );
+  }
+
   @override
   List<Object?> get props => [metrics, activities];
 }
@@ -39,6 +49,20 @@ class HomeActivity extends Equatable {
   final String category;
   final String time;
   final bool isComplete;
+
+  HomeActivity copyWith({
+    String? title,
+    String? category,
+    String? time,
+    bool? isComplete,
+  }) {
+    return HomeActivity(
+      title: title ?? this.title,
+      category: category ?? this.category,
+      time: time ?? this.time,
+      isComplete: isComplete ?? this.isComplete,
+    );
+  }
 
   @override
   List<Object?> get props => [title, category, time, isComplete];
